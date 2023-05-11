@@ -5,6 +5,7 @@ import { Env, StateService } from '../../../services/state.service';
 import { IBackendInfo } from '../../../interfaces/websocket.interface';
 import { LanguageService } from '../../../services/language.service';
 import { NavigationService } from '../../../services/navigation.service';
+import { StorageService } from '../../../services/storage.service';
 
 @Component({
   selector: 'app-global-footer',
@@ -23,11 +24,14 @@ export class GlobalFooterComponent implements OnInit {
   network$: Observable<string>;
   networkPaths: { [network: string]: string };
   currentNetwork = '';
+  loggedIn = false;
+  username = null;
 
   constructor(
     public stateService: StateService,
     private languageService: LanguageService,
     private navigationService: NavigationService,
+    private storageService: StorageService
   ) {}
 
   ngOnInit(): void {
@@ -45,6 +49,14 @@ export class GlobalFooterComponent implements OnInit {
     this.network$.pipe(takeUntil(this.destroy$)).subscribe((network) => {
       this.currentNetwork = network;
     });
+
+    this.loggedIn = this.storageService.getValue('auth') !== null;
+    const auth = JSON.parse(this.storageService.getValue('auth'));
+    if (auth?.user?.username) {
+      this.username = auth.user.username;
+    } else {
+      this.username = null;
+    }
   }
 
   ngOnDestroy(): void {
